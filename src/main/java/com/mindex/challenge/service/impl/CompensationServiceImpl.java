@@ -25,27 +25,25 @@ public class CompensationServiceImpl implements CompensationService {
     private EmployeeRepository employeeRepository;
 
     @Override
-    public Compensation create(Compensation compensation) {
-        LOG.debug("Creating compensation [{}]", compensation);
+    public Compensation create(String id, Compensation compensation) {
+        LOG.debug("Creating compensation [{}] for id [{}]", compensation, id);
 
-        String employeeId = compensation.getEmployee().getEmployeeId();
-
-        CompensationStorage compensationStorage = compensationRepository.findByEmployeeId(employeeId);
+        CompensationStorage compensationStorage = compensationRepository.findByEmployeeId(id);
 
         if (compensationStorage != null) {
-            throw new RuntimeException("Compensation exists for employeeId: " + employeeId);
+            throw new RuntimeException("Compensation exists for employeeId: " + id);
         }
 
-        Employee employee = employeeRepository.findByEmployeeId(employeeId);
+        Employee employee = employeeRepository.findByEmployeeId(id);
 
         if (employee == null) {
-            throw new RuntimeException("Invalid employeeId: " + employeeId);
+            throw new RuntimeException("Invalid employeeId: " + id);
         }
 
         LocalDate effectiveDate = LocalDate.now();
 
         compensationStorage = new CompensationStorage();
-        compensationStorage.setEmployeeId(employeeId);
+        compensationStorage.setEmployeeId(id);
         compensationStorage.setSalary(compensation.getSalary());
         compensationStorage.setEffectiveDate(effectiveDate);
 

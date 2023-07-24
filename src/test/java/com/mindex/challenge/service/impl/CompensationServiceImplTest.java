@@ -11,6 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -37,21 +41,27 @@ public class CompensationServiceImplTest {
 
     @Before
     public void setup() {
-        compensationUrl = "http://localhost:" + port + "/employee/compensation";
-        compensationIdUrl = "http://localhost:" + port + "/employee/{id}/compensation";
+        compensationUrl = "http://localhost:" + port + "/employee/{id}/compensation";
     }
 
     @Test
     public void testCreateReadUpdate() {
-        Employee testEmployee = new Employee();
-        testEmployee.setEmployeeId("16a596ae-edd3-4847-99fe-c4518e82c86f");
+        String id = "16a596ae-edd3-4847-99fe-c4518e82c86f";
+
         Compensation testCompensation = new Compensation();
-        testCompensation.setEmployee(testEmployee);
         testCompensation.setSalary(12345.67);
         
         // Create checks
-        Compensation createdCompensation = restTemplate.postForEntity(compensationUrl, testCompensation, Compensation.class).getBody();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
+        Compensation createdCompensation =
+                restTemplate.exchange(compensationUrl,
+                        HttpMethod.PUT,
+                        new HttpEntity<Compensation>(testCompensation, headers),
+                        Compensation.class,
+                        id).getBody();
+        
         assertNotNull(createdCompensation.getEmployee());
         assertEquals(createdCompensation.getEmployee().getEmployeeId(), testCompensation.getEmployee().getEmployeeId());
         assertEquals(createdCompensation.getSalary(), testCompensation.getSalary(), .0001);
